@@ -1,0 +1,9 @@
+@library.minimalapi_HostAddress = http://localhost:5018
+
+GET {{library.minimalapi_HostAddress}}/books/
+Accept: application/json
+
+###
+
+GET {{library.minimalapi_HostAddress}}/book?isbn=999-999999999
+Accept: application/json
