@@ -10,10 +10,6 @@ builder.InstallServices();
 
 var app = builder.Build();
 
-if (app.Environment.IsDevelopment())
-{
-    app.MapOpenApi();
-}
 
 app.MapGet("/books", ([FromServices] IBookService bookService) =>
 {
