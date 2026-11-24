@@ -5,5 +5,20 @@ Accept: application/json
 
 ###
 
-GET {{library.minimalapi_HostAddress}}/book?isbn=999-999999999
+GET {{library.minimalapi_HostAddress}}/book?isbn=9780201616224
 Accept: application/json
+
+###
+
+POST {{library.minimalapi_HostAddress}}/book
+Accept: application/json
+Content-Type: application/json
+
+{
+    "isbn": "9999991616224",
+    "title": "The Tester Programmer",
+    "author": "Jonh Doe",
+    "shortDescription": "The Tester Programmer",
+    "pageCount": 320,
+    "releaseDate": "2026-11-24"
+}

@@ -2,7 +2,8 @@ namespace library.minimalapi.Contracts;
 
 public interface IBookService
 {
-    public IEnumerable<Book?> GetAllBooks();
+    public Task<IEnumerable<Book?>> GetAllAsync();
 
-    public Book? GetBookByIsbn(string isbn);
+    public Task<Book?> GetByIsbnAsync(string isbn);
+    public Task<bool> CreateAsync(Book? book);
 }

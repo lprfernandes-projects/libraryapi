@@ -1,6 +1,7 @@
 
 using library.minimalapi.Contracts;
 using library.minimalapi.Data;
+using Microsoft.EntityFrameworkCore;
 
 namespace library.minimalapi.Services;
 
@@ -13,13 +14,32 @@ public class BookService : IBookService
         _dbContext = dbContext;
     }
 
-    public IEnumerable<Book?> GetAllBooks()
+    public async Task<IEnumerable<Book?>> GetAllAsync()
     {
-        return _dbContext.Books.ToList();
+        return await _dbContext.Books.ToListAsync();
     }
 
-    public Book? GetBookByIsbn(string isbn)
+    public async Task<Book?> GetByIsbnAsync(string isbn)
     {
-        return _dbContext.Books.SingleOrDefault(x => x.Isbn == isbn);
+        return await _dbContext.Books.SingleOrDefaultAsync(x => x.Isbn == isbn);
+    }
+
+    public async Task<bool> CreateAsync(Book? book)
+    {
+        if (book is null)
+        {
+            return false;
+        }
+
+        await _dbContext.Books.AddAsync(book);
+
+        int docsChanged = await _dbContext.SaveChangesAsync();
+
+        if (docsChanged < 1)
+        {
+            return false;
+        }
+
+        return true;
     }
 }
