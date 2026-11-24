@@ -43,10 +43,30 @@ app.MapPost("/book",
 
         if (!created)
         {
-            Results.BadRequest();
+            Results.Problem("It wasn't possible to create the book");
         }
 
         Results.Created();
     });
+
+app.MapDelete("/book",
+    async ([FromQuery] string? isbn, [FromServices] IBookService bookService)
+        =>
+    {
+        if (string.IsNullOrWhiteSpace(isbn))
+        {
+            Results.Problem("isbn cannot be blank");
+        }
+
+        bool deleted = await bookService.DeleteByIsbnAsync(isbn);
+
+        if (!deleted)
+        {
+            Results.Problem("It wasn't possible to delete the book.");
+        }
+
+        Results.NoContent();
+    }
+);
 
 app.Run();

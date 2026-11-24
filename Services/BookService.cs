@@ -42,4 +42,24 @@ public class BookService : IBookService
 
         return true;
     }
+
+    public async Task<bool> DeleteByIsbnAsync(string isbn)
+    {
+        var book = await _dbContext.Books.SingleOrDefaultAsync(x => x.Isbn == isbn);
+
+        if (book is null)
+        {
+            return false;
+        }
+
+        _dbContext.Remove(book);
+        var nrRowsChanged = await _dbContext.SaveChangesAsync();
+
+        if (nrRowsChanged < 1)
+        {
+            return false;
+        }
+
+        return true;
+    }
 }

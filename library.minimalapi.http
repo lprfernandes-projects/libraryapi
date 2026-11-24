@@ -15,10 +15,17 @@ Accept: application/json
 Content-Type: application/json
 
 {
-    "isbn": "9999991616224",
-    "title": "The Tester Programmer",
+    "isbn": "9999991616225",
+    "title": "The Tester Programmer 2",
     "author": "Jonh Doe",
-    "shortDescription": "The Tester Programmer",
+    "shortDescription": "The Tester Programmer 2",
     "pageCount": 320,
     "releaseDate": "2026-11-24"
 }
+
+###
+
+DELETE  {{library.minimalapi_HostAddress}}/book?isbn=9999991616225
+Accept: application/json
+
+###
