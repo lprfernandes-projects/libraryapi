@@ -29,3 +29,16 @@ DELETE  {{library.minimalapi_HostAddress}}/book?isbn=9999991616225
 Accept: application/json
 
 ###
+
+PUT  {{library.minimalapi_HostAddress}}/book?isbn=9780201616224
+Accept: application/json
+Content-Type: application/json
+
+{
+  "isbn": "9780201616224",
+  "title": "The Pragmatic Programmer",
+  "author": "Andrew Hunt",
+  "shortDescription": "The Pragmatic Programmer",
+  "pageCount": 320,
+  "releaseDate": "2020-06-01"
+}

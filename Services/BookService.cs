@@ -14,7 +14,7 @@ public class BookService : IBookService
         _dbContext = dbContext;
     }
 
-    public async Task<IEnumerable<Book?>> GetAllAsync()
+    public async Task<IEnumerable<Book>> GetAllAsync()
     {
         return await _dbContext.Books.ToListAsync();
     }
@@ -24,7 +24,7 @@ public class BookService : IBookService
         return await _dbContext.Books.SingleOrDefaultAsync(x => x.Isbn == isbn);
     }
 
-    public async Task<bool> CreateAsync(Book? book)
+    public async Task<bool> CreateAsync(Book book)
     {
         if (book is null)
         {
@@ -53,6 +53,27 @@ public class BookService : IBookService
         }
 
         _dbContext.Remove(book);
+        var nrRowsChanged = await _dbContext.SaveChangesAsync();
+
+        if (nrRowsChanged < 1)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    public async Task<bool> UpdateByIsbnAsync(string isbn, Book book)
+    {
+        var existingBook = await _dbContext.Books.AsNoTracking().FirstOrDefaultAsync(b => b.Isbn == isbn);
+
+
+        if (existingBook is null) return false;
+
+        var updatedBook = new Book(book.Isbn, book.Title, book.Author, book.ShortDescription, book.PageCount,
+            book.ReleaseDate);
+
+        _dbContext.Update(updatedBook);
         var nrRowsChanged = await _dbContext.SaveChangesAsync();
 
         if (nrRowsChanged < 1)
