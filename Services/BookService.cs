@@ -83,4 +83,12 @@ public class BookService : IBookService
 
         return true;
     }
+
+    public async Task<IEnumerable<Book>> SearchByTitleAsync(string searchTerm)
+    {
+        var books = await _dbContext.Books
+            .Where(x => x.Title.ToLower().Contains(searchTerm.ToLower()))
+            .ToListAsync();
+        return books;
+    }
 }

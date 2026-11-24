@@ -10,6 +10,11 @@ Accept: application/json
 
 ###
 
+GET {{library.minimalapi_HostAddress}}/search?searchTerm=code
+Accept: application/json
+
+###
+
 POST {{library.minimalapi_HostAddress}}/book
 Accept: application/json
 Content-Type: application/json

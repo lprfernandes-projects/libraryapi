@@ -14,6 +14,19 @@ public static class WebApplicationExtension
             return Results.Ok(books);
         });
 
+        //Get book by searchterm
+        app.MapGet("/search", async ([FromQuery] string? searchTerm, [FromServices] IBookService bookService) =>
+        {
+            if (string.IsNullOrWhiteSpace(searchTerm))
+            {
+                return Results.Problem("search term missing");
+            }
+
+            var books = await bookService.SearchByTitleAsync(searchTerm);
+
+            return Results.Ok(books);
+        });
+
         //Get book by Isbn
         app.MapGet("/book", async ([FromQuery] string? isbn, [FromServices] IBookService bookService) =>
         {
@@ -31,6 +44,7 @@ public static class WebApplicationExtension
 
             return Results.Ok(book);
         });
+
 
         //Update a book by Isbn
         app.MapPut("/book",
