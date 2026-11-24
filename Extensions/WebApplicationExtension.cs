@@ -81,19 +81,13 @@ public static class WebApplicationExtension
                     [FromServices] IBookService bookService)
                 =>
             {
-                if (book is null)
-                {
-                    Results.NoContent();
-                }
+                if (book is null) Results.NoContent();
 
-                bool created = await bookService.CreateAsync(book);
+                bool created = await bookService.CreateAsync(book!);
 
-                if (!created)
-                {
-                    Results.Problem("It wasn't possible to create the book");
-                }
+                if (!created) Results.Problem("It wasn't possible to create the book");
 
-                Results.Created();
+                Results.Created($"/book?isbn={book!.Isbn}", book);
             });
 
         //Delete a book
@@ -104,16 +98,11 @@ public static class WebApplicationExtension
                 =>
             {
                 if (string.IsNullOrWhiteSpace(isbn))
-                {
                     Results.Problem("isbn cannot be blank");
-                }
 
-                bool deleted = await bookService.DeleteByIsbnAsync(isbn);
+                bool deleted = await bookService.DeleteByIsbnAsync(isbn!);
 
-                if (!deleted)
-                {
-                    Results.Problem("It wasn't possible to delete the book.");
-                }
+                if (!deleted) Results.Problem("It wasn't possible to delete the book.");
 
                 Results.NoContent();
             }

@@ -26,19 +26,15 @@ public class BookService : IBookService
 
     public async Task<bool> CreateAsync(Book book)
     {
-        if (book is null)
-        {
-            return false;
-        }
+        if (book is null) return false;
+
+        if (await _dbContext.Books.CountAsync(x => x.Isbn == book.Isbn) > 0) return false;
 
         await _dbContext.Books.AddAsync(book);
 
         int docsChanged = await _dbContext.SaveChangesAsync();
 
-        if (docsChanged < 1)
-        {
-            return false;
-        }
+        if (docsChanged < 1) return false;
 
         return true;
     }
