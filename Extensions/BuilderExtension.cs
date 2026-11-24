@@ -10,6 +10,8 @@ public static class BuilderExtensions
 {
     public static WebApplicationBuilder InstallServices(this WebApplicationBuilder builder)
     {
+        builder.Services.AddOpenApi();
+
         builder.Services.AddDbContext<ApplicationDbContext>(options =>
         {
             options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection"))
