@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("library.minimalapi.tests.integration")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+69a2b57dcad934df61a1fbd41446a9b7122f024b")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+2a431024eeb82cd65b1396083935de0b42858e7a")]
 [assembly: System.Reflection.AssemblyProductAttribute("library.minimalapi.tests.integration")]
 [assembly: System.Reflection.AssemblyTitleAttribute("library.minimalapi.tests.integration")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

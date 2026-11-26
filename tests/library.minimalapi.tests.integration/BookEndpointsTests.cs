@@ -34,6 +34,23 @@ public class BookEndpointsTests : IClassFixture<WebApplicationFactory<Program>>
         result.Headers.Location.Should().Be($"/book?isbn={book.Isbn}");
     }
 
+    [Fact]
+    public async Task CreateBook_Fails_WhenIsbnIsInvalid()
+    {
+        //Arrange
+        var httpClient = _factory.CreateClient();
+        var book = GenerateBook() with { Isbn = "INVALID" };
+
+        //Act
+        var result = await httpClient.PostAsJsonAsync("/book", book);
+        var validation = await result.Content.ReadFromJsonAsync<HttpValidationProblemDetails>();
+
+        //Assert
+        result.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        validation.Should().NotBeNull();
+        validation.Errors.Should().NotBeEmpty();
+    }
+
     private Book GenerateBook(string title = "ABC")
     {
         return new Book(
