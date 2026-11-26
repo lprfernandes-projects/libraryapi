@@ -71,6 +71,56 @@ public class BookEndpointsTests : IClassFixture<WebApplicationFactory<Program>>,
         error.Should().Be("A book with this ISBN already exists.");
     }
 
+
+    [Fact]
+    public async Task GetBook_ReturnsBook_WhenBookExists()
+    {
+        // Arrange
+        var httpClient = _factory.CreateClient();
+        var book = GenerateBook();
+        await httpClient.PostAsJsonAsync("/book", book);
+        _createdISBNs.Add(book.Isbn);
+
+        // Act
+        var result = await httpClient.GetAsync($"/book?isbn={book.Isbn}");
+        var existingBook = await result.Content.ReadFromJsonAsync<Book>();
+
+        // Assert
+
+        result.StatusCode.Should().Be(HttpStatusCode.OK);
+        existingBook.Should().BeEquivalentTo(book);
+    }
+
+
+    [Fact]
+    public async Task GetBook_ReturnsNotFound_WhenBookNotExist()
+    {
+        // Arrange
+        var httpClient = _factory.CreateClient();
+        var isbn = GenerateIsbn();
+
+        // Act
+        var result = await httpClient.GetAsync($"/book?isbn={isbn}");
+
+        // Assert
+
+        result.StatusCode.Should().Be(HttpStatusCode.NotFound);
+    }
+
+
+    public Task InitializeAsync() => Task.CompletedTask;
+
+    async Task IAsyncLifetime.DisposeAsync()
+    {
+        var httpClient = _factory.CreateClient();
+        foreach (var createdIsbn in _createdISBNs)
+        {
+            var response = await httpClient.DeleteAsync($"/book?isbn={Uri.EscapeDataString(createdIsbn)}");
+            response.EnsureSuccessStatusCode();
+        }
+    }
+
+
     private Book GenerateBook(string title = "ABC")
     {
         return new Book(
@@ -85,17 +135,5 @@ public class BookEndpointsTests : IClassFixture<WebApplicationFactory<Program>>,
     private string GenerateIsbn()
     {
         return $"000000{Random.Shared.Next(0, 10_000_000):D7}";
-    }
-
-    public Task InitializeAsync() => Task.CompletedTask;
-
-    async Task IAsyncLifetime.DisposeAsync()
-    {
-        var httpClient = _factory.CreateClient();
-        foreach (var createdIsbn in _createdISBNs)
-        {
-            var response = await httpClient.DeleteAsync($"/book?isbn={Uri.EscapeDataString(createdIsbn)}");
-            response.EnsureSuccessStatusCode();
-        }
     }
 }
