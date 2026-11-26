@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc.Testing;
 
 namespace library.minimalapi.tests.integration;
 
-public class BookEndpointsTests : IClassFixture<WebApplicationFactory<Program>>, IAsyncDisposable
+public class BookEndpointsTests : IClassFixture<WebApplicationFactory<Program>>, IAsyncLifetime
 {
     private readonly WebApplicationFactory<Program> _factory;
     private readonly List<string> _createdISBNs = new();
@@ -42,7 +42,6 @@ public class BookEndpointsTests : IClassFixture<WebApplicationFactory<Program>>,
 
         //Act
         var result = await httpClient.PostAsJsonAsync("/book", book);
-        _createdISBNs.Add(book.Isbn);
         var validation = await result.Content.ReadFromJsonAsync<HttpValidationProblemDetails>();
 
         //Assert
@@ -88,12 +87,15 @@ public class BookEndpointsTests : IClassFixture<WebApplicationFactory<Program>>,
         return $"000000{Random.Shared.Next(0, 10_000_000):D7}";
     }
 
-    public async ValueTask DisposeAsync()
+    public Task InitializeAsync() => Task.CompletedTask;
+
+    async Task IAsyncLifetime.DisposeAsync()
     {
         var httpClient = _factory.CreateClient();
         foreach (var createdIsbn in _createdISBNs)
         {
-            await httpClient.DeleteAsync($"/books/{createdIsbn}");
+            var response = await httpClient.DeleteAsync($"/book?isbn={Uri.EscapeDataString(createdIsbn)}");
+            response.EnsureSuccessStatusCode();
         }
     }
 }
