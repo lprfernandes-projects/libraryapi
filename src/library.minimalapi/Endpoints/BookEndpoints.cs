@@ -38,7 +38,7 @@ public static class BookEndpoints
         app.MapPost(BaseRoute, BookHandlers.CreateBookAsync)
             .WithName("Create book")
             .Accepts<Book>(ContentType)
-            .Produces<Book>()
+            .Produces<Book>(201)
             .Produces(400)
             .WithTags(Tag);
 

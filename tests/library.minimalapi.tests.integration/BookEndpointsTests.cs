@@ -1,15 +1,13 @@
 using System.Net;
-using System.Runtime.CompilerServices;
 using AwesomeAssertions;
-using library.minimalapi.Data;
 using Microsoft.AspNetCore.Mvc.Testing;
-using Microsoft.EntityFrameworkCore;
 
 namespace library.minimalapi.tests.integration;
 
-public class BookEndpointsTests : IClassFixture<WebApplicationFactory<Program>>
+public class BookEndpointsTests : IClassFixture<WebApplicationFactory<Program>>, IAsyncDisposable
 {
     private readonly WebApplicationFactory<Program> _factory;
+    private readonly List<string> _createdISBNs = new();
 
     public BookEndpointsTests(WebApplicationFactory<Program> factory)
     {
@@ -25,6 +23,7 @@ public class BookEndpointsTests : IClassFixture<WebApplicationFactory<Program>>
 
         //Act
         var result = await httpClient.PostAsJsonAsync("/book", book);
+        _createdISBNs.Add(book.Isbn);
         var createdBook = await result.Content.ReadFromJsonAsync<Book>();
 
         //Assert
@@ -43,12 +42,34 @@ public class BookEndpointsTests : IClassFixture<WebApplicationFactory<Program>>
 
         //Act
         var result = await httpClient.PostAsJsonAsync("/book", book);
+        _createdISBNs.Add(book.Isbn);
         var validation = await result.Content.ReadFromJsonAsync<HttpValidationProblemDetails>();
 
         //Assert
         result.StatusCode.Should().Be(HttpStatusCode.BadRequest);
         validation.Should().NotBeNull();
         validation.Errors.Should().NotBeEmpty();
+    }
+
+    [Fact]
+    public async Task CreateBook_Fails_WhenBookExists()
+    {
+        // Arrange
+        var httpClient = _factory.CreateClient();
+        var book = GenerateBook();
+
+        // Act
+        var firstResponse = await httpClient.PostAsJsonAsync("/book", book);
+        _createdISBNs.Add(book.Isbn);
+        var result = await httpClient.PostAsJsonAsync("/book", book);
+
+        // Assert
+        firstResponse.StatusCode.Should().Be(HttpStatusCode.Created);
+        result.StatusCode.Should().Be(HttpStatusCode.Conflict);
+
+        var error = await result.Content.ReadFromJsonAsync<string>();
+
+        error.Should().Be("A book with this ISBN already exists.");
     }
 
     private Book GenerateBook(string title = "ABC")
@@ -65,5 +86,14 @@ public class BookEndpointsTests : IClassFixture<WebApplicationFactory<Program>>
     private string GenerateIsbn()
     {
         return $"000000{Random.Shared.Next(0, 10_000_000):D7}";
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        var httpClient = _factory.CreateClient();
+        foreach (var createdIsbn in _createdISBNs)
+        {
+            await httpClient.DeleteAsync($"/books/{createdIsbn}");
+        }
     }
 }

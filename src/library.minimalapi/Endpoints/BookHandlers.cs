@@ -41,7 +41,8 @@ public static class BookHandlers
 
       bool created = await bookService.CreateAsync(book);
 
-      if (!created) return Results.Problem("It wasn't possible to create the book");
+      if (!created)
+         return Results.Conflict("A book with this ISBN already exists.");
 
       return Results.Created($"/book?isbn={book.Isbn}", book);
    }
