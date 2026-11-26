@@ -8,7 +8,7 @@ namespace library.minimalapi.Extensions;
 
 public static class BuilderExtensions
 {
-    public static WebApplicationBuilder InstallServices(this WebApplicationBuilder builder)
+    public static void InstallServices(this WebApplicationBuilder builder)
     {
         builder.Services.AddOpenApi();
         builder.Services.AddValidation();
@@ -50,6 +50,5 @@ public static class BuilderExtensions
         });
 
         builder.Services.AddScoped<IBookService, BookService>();
-        return builder;
     }
 }
