@@ -28,7 +28,7 @@ public class BookService : IBookService
     {
         if (book is null) return false;
 
-        if (await _dbContext.Books.CountAsync(x => x.Isbn == book.Isbn) > 0) return false;
+        if (await _dbContext.Books.AnyAsync(x => x.Isbn == book.Isbn)) return false;
 
         await _dbContext.Books.AddAsync(book);
 

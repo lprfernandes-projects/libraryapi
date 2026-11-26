@@ -14,39 +14,43 @@ public static class BuilderExtensions
         builder.Services.AddValidation();
         builder.Services.AddDbContext<ApplicationDbContext>(options =>
         {
-            options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection"))
-                .UseSeeding((context, _) =>
-                {
-                    if (context.Set<Book>().Any()) return;
+            var databasePath = Path.Combine(
+                builder.Environment.ContentRootPath,
+                "library.db");
 
-                    context.Set<Book>().AddRange(
-                        new Book(
-                            Isbn: "9780132350884",
-                            Title: "Clean Code",
-                            Author: "Robert C. Martin",
-                            ShortDescription: "Clean Code",
-                            PageCount: 12,
-                            ReleaseDate: new DateOnly(2022, 12, 1)
-                        ),
-                        new Book(
-                            Isbn: "9780201616224",
-                            Title: "The Pragmatic Programmer",
-                            Author: "Andrew Hunt",
-                            ShortDescription: "The Pragmatic Programmer",
-                            PageCount: 32,
-                            ReleaseDate: new DateOnly(2020, 6, 1)
-                        ),
-                        new Book(
-                            Isbn: "9780201633610",
-                            Title: "Design Patterns",
-                            Author: "Erich Gamma",
-                            ShortDescription: "Design Patterns",
-                            PageCount: 22,
-                            ReleaseDate: new DateOnly(2025, 6, 21)
-                        )
-                    );
-                    context.SaveChanges();
-                });
+            options.UseSqlite($"Data Source={databasePath}");
+            options.UseSeeding((context, _) =>
+            {
+                if (context.Set<Book>().Any()) return;
+
+                context.Set<Book>().AddRange(
+                    new Book(
+                        Isbn: "9780132350884",
+                        Title: "Clean Code",
+                        Author: "Robert C. Martin",
+                        ShortDescription: "Clean Code",
+                        PageCount: 12,
+                        ReleaseDate: new DateOnly(2022, 12, 1)
+                    ),
+                    new Book(
+                        Isbn: "9780201616224",
+                        Title: "The Pragmatic Programmer",
+                        Author: "Andrew Hunt",
+                        ShortDescription: "The Pragmatic Programmer",
+                        PageCount: 32,
+                        ReleaseDate: new DateOnly(2020, 6, 1)
+                    ),
+                    new Book(
+                        Isbn: "9780201633610",
+                        Title: "Design Patterns",
+                        Author: "Erich Gamma",
+                        ShortDescription: "Design Patterns",
+                        PageCount: 22,
+                        ReleaseDate: new DateOnly(2025, 6, 21)
+                    )
+                );
+                context.SaveChanges();
+            });
         });
 
         builder.Services.AddScoped<IBookService, BookService>();

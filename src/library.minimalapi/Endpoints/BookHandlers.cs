@@ -39,11 +39,11 @@ public static class BookHandlers
    {
       if (book is null) return Results.NoContent();
 
-      bool created = await bookService.CreateAsync(book!);
+      bool created = await bookService.CreateAsync(book);
 
       if (!created) return Results.Problem("It wasn't possible to create the book");
 
-      return Results.Created($"/book?isbn={book!.Isbn}", book);
+      return Results.Created($"/book?isbn={book.Isbn}", book);
    }
 
    public static async Task<IResult> UpdateBookAsync(string? isbn, Book? book, IBookService bookService)
