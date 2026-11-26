@@ -1,5 +1,6 @@
 using System.Net;
 using AwesomeAssertions;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Testing;
 
 namespace library.minimalapi.tests.integration;
@@ -105,6 +106,28 @@ public class BookEndpointsTests : IClassFixture<WebApplicationFactory<Program>>,
         // Assert
 
         result.StatusCode.Should().Be(HttpStatusCode.NotFound);
+    }
+
+
+    [Fact]
+    public async Task GetAllBooks_ReturnsAllBooks_WhenBooksExist()
+    {
+        //Arrange
+        var httpClient = _factory.CreateClient();
+        var book = GenerateBook();
+        await httpClient.PostAsJsonAsync("/book", book);
+        _createdISBNs.Add(book.Isbn);
+        var books = new List<Book>() { book };
+
+        //Act
+        var result = await httpClient.GetAsync("/books");
+        var createdBooks = await result.Content.ReadFromJsonAsync<List<Book>>();
+
+        //Assert
+        result.StatusCode.Should().Be(HttpStatusCode.OK);
+        createdBooks.Should().NotBeNull();
+        createdBooks.Should().BeEquivalentTo(books);
+        result.Headers.Location.Should().Be($"/book?isbn={book.Isbn}");
     }
 
 
