@@ -122,12 +122,28 @@ public class BookEndpointsTests : IClassFixture<WebApplicationFactory<Program>>,
         //Act
 
         var result = await httpClient.GetAsync("/books");
-        var createdBooks = await result.Content.ReadFromJsonAsync<IEnumerable<Book>>();
+        var createdBooks = await result.Content.ReadFromJsonAsync<List<Book>>();
 
         //Assert
         result.StatusCode.Should().Be(HttpStatusCode.OK);
         createdBooks.Should().NotBeNull();
         createdBooks.Should().BeEquivalentTo(books);
+    }
+
+    [Fact]
+    public async Task GetAllBooks_ReturnsNoBooks_WhenNoBooksExist()
+    {
+        //Arrange
+        var httpClient = _factory.CreateClient();
+
+        //Act
+
+        var result = await httpClient.GetAsync("/books");
+        var createdBooks = await result.Content.ReadFromJsonAsync<List<Book>>();
+
+        //Assert
+        result.StatusCode.Should().Be(HttpStatusCode.OK);
+        createdBooks.Should().BeEmpty();
     }
 
 
