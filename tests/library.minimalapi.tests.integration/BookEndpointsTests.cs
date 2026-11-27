@@ -168,6 +168,90 @@ public class BookEndpointsTests : IClassFixture<WebApplicationFactory<Program>>,
         foundBooks.Should().BeEquivalentTo(books);
     }
 
+    [Fact]
+    public async Task UpdateBook_UpdatesBook_WhenDataIsCorrect()
+    {
+        //Arrange
+        var httpClient = _factory.CreateClient();
+        var book = GenerateBook() with { PageCount = 100 };
+        await httpClient.PostAsJsonAsync("/book", book);
+        _createdISBNs.Add(book.Isbn);
+
+        //Act
+        var updatedBook = book with { PageCount = 69 };
+        var result = await httpClient.PutAsJsonAsync($"/book?isbn={book.Isbn}", updatedBook);
+
+        var returnedBook = await result.Content.ReadFromJsonAsync<Book>();
+
+        //Assert
+        result.StatusCode.Should().Be(HttpStatusCode.OK);
+        returnedBook.Should().NotBeNull();
+        returnedBook.Should().BeEquivalentTo(updatedBook);
+    }
+
+    [Fact]
+    public async Task UpdateBook_DoesNotUpdatesBook_WhenDataIsIncorrect()
+    {
+        //Arrange
+        var httpClient = _factory.CreateClient();
+        var book = GenerateBook();
+        await httpClient.PostAsJsonAsync("/book", book);
+        _createdISBNs.Add(book.Isbn);
+
+        //Act
+        var updatedBook = book with { Title = string.Empty };
+        var result = await httpClient.PutAsJsonAsync($"/book?isbn={book.Isbn}", updatedBook);
+        var validation = await result.Content.ReadFromJsonAsync<HttpValidationProblemDetails>();
+
+        //Assert
+        result.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        validation.Should().NotBeNull();
+        validation.Errors.Should().NotBeEmpty();
+    }
+
+
+    [Fact]
+    public async Task UpdateBook_DoesNotUpdateBook_WhenBookIsNotFound()
+    {
+        // Arrange
+        using var httpClient = _factory.CreateClient();
+        var updatedBook = GenerateBook() with
+        {
+            Isbn = "1000000000000"
+        };
+
+        // Act
+        var result = await httpClient.PutAsJsonAsync(
+            $"/book?isbn={updatedBook.Isbn}",
+            updatedBook);
+
+        // Assert
+        result.StatusCode.Should().Be(HttpStatusCode.NotFound);
+
+        var error = await result.Content.ReadFromJsonAsync<ProblemDetails>();
+
+        error.Should().NotBeNull();
+        error.Detail.Should().Be("It wasn't possible to update the book");
+    }
+
+
+    [Fact]
+    public async Task UpdateBook_DoesNotUpdatesBook_WhenIsbnDontMatch()
+    {
+        //Arrange
+        var httpClient = _factory.CreateClient();
+        var updatedBook = GenerateBook() with { Isbn = "0000000000001" };
+
+        //Act
+        var result = await httpClient.PutAsJsonAsync("/book?isbn=0000000000000", updatedBook);
+        var error = await result.Content.ReadFromJsonAsync<string>();
+
+
+        //Assert
+        result.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        error.Should().Be("isbn and the book property isbn are not the same");
+    }
+
 
     public Task InitializeAsync() => Task.CompletedTask;
 

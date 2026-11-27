@@ -61,9 +61,14 @@ public static class BookHandlers
       bool updated = await bookService.UpdateByIsbnAsync(isbn, book);
 
       if (!updated)
-         return Results.Problem("It wasn't possible to update the book");
+      {
+         return Results.Problem(
+            statusCode: StatusCodes.Status404NotFound,
+            title: "Book not found",
+            detail: "It wasn't possible to update the book");
+      }
 
-      return Results.Ok();
+      return Results.Ok(book);
    }
 
    public static async Task<IResult> DeleteBookAsync(string? isbn, IBookService bookService)
