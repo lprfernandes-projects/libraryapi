@@ -147,6 +147,28 @@ public class BookEndpointsTests : IClassFixture<WebApplicationFactory<Program>>,
     }
 
 
+    [Fact]
+    public async Task SearchBooks_ReturnsBooks_WhenTitleMatches()
+    {
+        //Arrange
+        var httpClient = _factory.CreateClient();
+        var book = GenerateBook("Clean code");
+        await httpClient.PostAsJsonAsync("/book", book);
+        _createdISBNs.Add(book.Isbn);
+        var books = new List<Book>() { book };
+
+        //Act
+
+        var result = await httpClient.GetAsync("/search?SearchTerm=code");
+        var foundBooks = await result.Content.ReadFromJsonAsync<List<Book>>();
+
+        //Assert
+        result.StatusCode.Should().Be(HttpStatusCode.OK);
+        foundBooks.Should().NotBeNull();
+        foundBooks.Should().BeEquivalentTo(books);
+    }
+
+
     public Task InitializeAsync() => Task.CompletedTask;
 
     async Task IAsyncLifetime.DisposeAsync()
@@ -164,7 +186,7 @@ public class BookEndpointsTests : IClassFixture<WebApplicationFactory<Program>>,
     {
         return new Book(
             GenerateIsbn(),
-            "This is a title of a book",
+            title,
             "LF",
             "This is a description of a book",
             Random.Shared.Next(1, 1000),
