@@ -5,15 +5,16 @@ using Microsoft.AspNetCore.Mvc.Testing;
 
 namespace library.minimalapi.tests.integration;
 
-public class BookEndpointsTests : IClassFixture<WebApplicationFactory<Program>>, IAsyncLifetime
+public class BookEndpointsTests : IDisposable
 {
-    private readonly WebApplicationFactory<Program> _factory;
-    private readonly List<string> _createdISBNs = new();
+    private readonly LibraryApiFactory _factory = new();
 
-    public BookEndpointsTests(WebApplicationFactory<Program> factory)
+
+    public void Dispose()
     {
-        _factory = factory;
+        _factory.Dispose();
     }
+
 
     [Fact]
     public async Task CreateBook_CreatesBook_WhenDataIsCorrect()
@@ -24,7 +25,6 @@ public class BookEndpointsTests : IClassFixture<WebApplicationFactory<Program>>,
 
         //Act
         var result = await httpClient.PostAsJsonAsync("/book", book);
-        _createdISBNs.Add(book.Isbn);
         var createdBook = await result.Content.ReadFromJsonAsync<Book>();
 
         //Assert
@@ -60,7 +60,6 @@ public class BookEndpointsTests : IClassFixture<WebApplicationFactory<Program>>,
 
         // Act
         var firstResponse = await httpClient.PostAsJsonAsync("/book", book);
-        _createdISBNs.Add(book.Isbn);
         var result = await httpClient.PostAsJsonAsync("/book", book);
 
         // Assert
@@ -80,7 +79,6 @@ public class BookEndpointsTests : IClassFixture<WebApplicationFactory<Program>>,
         var httpClient = _factory.CreateClient();
         var book = GenerateBook();
         await httpClient.PostAsJsonAsync("/book", book);
-        _createdISBNs.Add(book.Isbn);
 
         // Act
         var result = await httpClient.GetAsync($"/book?isbn={book.Isbn}");
@@ -116,7 +114,6 @@ public class BookEndpointsTests : IClassFixture<WebApplicationFactory<Program>>,
         var httpClient = _factory.CreateClient();
         var book = GenerateBook();
         await httpClient.PostAsJsonAsync("/book", book);
-        _createdISBNs.Add(book.Isbn);
         var books = new List<Book>() { book };
 
         //Act
@@ -154,7 +151,6 @@ public class BookEndpointsTests : IClassFixture<WebApplicationFactory<Program>>,
         var httpClient = _factory.CreateClient();
         var book = GenerateBook("Clean code");
         await httpClient.PostAsJsonAsync("/book", book);
-        _createdISBNs.Add(book.Isbn);
         var books = new List<Book>() { book };
 
         //Act
@@ -175,7 +171,6 @@ public class BookEndpointsTests : IClassFixture<WebApplicationFactory<Program>>,
         var httpClient = _factory.CreateClient();
         var book = GenerateBook() with { PageCount = 100 };
         await httpClient.PostAsJsonAsync("/book", book);
-        _createdISBNs.Add(book.Isbn);
 
         //Act
         var updatedBook = book with { PageCount = 69 };
@@ -196,7 +191,6 @@ public class BookEndpointsTests : IClassFixture<WebApplicationFactory<Program>>,
         var httpClient = _factory.CreateClient();
         var book = GenerateBook();
         await httpClient.PostAsJsonAsync("/book", book);
-        _createdISBNs.Add(book.Isbn);
 
         //Act
         var updatedBook = book with { Title = string.Empty };
@@ -260,7 +254,6 @@ public class BookEndpointsTests : IClassFixture<WebApplicationFactory<Program>>,
         var httpClient = _factory.CreateClient();
         var book = GenerateBook();
         await httpClient.PostAsJsonAsync("/book", book);
-        _createdISBNs.Add(book.Isbn);
 
         // Act
         var result = await httpClient.DeleteAsync($"/book?isbn={book.Isbn}");
@@ -281,17 +274,6 @@ public class BookEndpointsTests : IClassFixture<WebApplicationFactory<Program>>,
 
         // Assert
         result.StatusCode.Should().Be(HttpStatusCode.NotFound);
-    }
-
-    public Task InitializeAsync() => Task.CompletedTask;
-
-    async Task IAsyncLifetime.DisposeAsync()
-    {
-        var httpClient = _factory.CreateClient();
-        foreach (var createdIsbn in _createdISBNs)
-        {
-            await httpClient.DeleteAsync($"/book?isbn={Uri.EscapeDataString(createdIsbn)}");
-        }
     }
 
 
