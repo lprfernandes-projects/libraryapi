@@ -253,6 +253,36 @@ public class BookEndpointsTests : IClassFixture<WebApplicationFactory<Program>>,
     }
 
 
+    [Fact]
+    public async Task DeleteBook_ReturnsNoContent_WhenBookExist()
+    {
+        //Arrange
+        var httpClient = _factory.CreateClient();
+        var book = GenerateBook();
+        await httpClient.PostAsJsonAsync("/book", book);
+        _createdISBNs.Add(book.Isbn);
+
+        // Act
+        var result = await httpClient.DeleteAsync($"/book?isbn={book.Isbn}");
+
+        // Assert
+        result.StatusCode.Should().Be(HttpStatusCode.NoContent);
+    }
+
+    [Fact]
+    public async Task DeleteBook_ReturnsNotFound_WhenBookNotExist()
+    {
+        // Arrange
+        var httpClient = _factory.CreateClient();
+        var isbn = GenerateIsbn();
+
+        // Act
+        var result = await httpClient.DeleteAsync($"/book?isbn={isbn}");
+
+        // Assert
+        result.StatusCode.Should().Be(HttpStatusCode.NotFound);
+    }
+
     public Task InitializeAsync() => Task.CompletedTask;
 
     async Task IAsyncLifetime.DisposeAsync()
@@ -260,8 +290,7 @@ public class BookEndpointsTests : IClassFixture<WebApplicationFactory<Program>>,
         var httpClient = _factory.CreateClient();
         foreach (var createdIsbn in _createdISBNs)
         {
-            var response = await httpClient.DeleteAsync($"/book?isbn={Uri.EscapeDataString(createdIsbn)}");
-            response.EnsureSuccessStatusCode();
+            await httpClient.DeleteAsync($"/book?isbn={Uri.EscapeDataString(createdIsbn)}");
         }
     }
 

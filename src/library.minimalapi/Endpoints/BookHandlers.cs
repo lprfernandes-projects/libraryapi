@@ -76,9 +76,9 @@ public static class BookHandlers
       if (string.IsNullOrWhiteSpace(isbn))
          return Results.BadRequest("isbn cannot be blank");
 
-      bool deleted = await bookService.DeleteByIsbnAsync(isbn!);
+      bool deleted = await bookService.DeleteByIsbnAsync(isbn);
 
-      if (!deleted) return Results.Problem("It wasn't possible to delete the book.");
+      if (!deleted) return Results.NotFound("It wasn't possible to delete the book.");
 
       return Results.NoContent();
    }
